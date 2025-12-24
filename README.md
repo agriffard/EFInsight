@@ -34,6 +34,21 @@ services.AddDbContext<MyDbContext>(options =>
            .AddInterceptors(slowQueryLogger));
 ```
 
+## Sample Application
+
+A complete sample application is included in the `samples/EFInsight.Sample` directory. Run it with:
+
+```bash
+cd samples/EFInsight.Sample
+dotnet run
+```
+
+The sample demonstrates:
+- Basic query logging
+- Custom callbacks for slow queries
+- Various query types (SELECT, INSERT, UPDATE)
+- Eager loading with Include()
+
 ## Configuration Options
 
 | Parameter | Type | Default | Description |
@@ -103,8 +118,8 @@ warn: EFInsight.SlowQueryLogger[0]
 
 ## Compatibility
 
-- .NET 9.0+
-- EF Core 8.0+
+- .NET 10.0+
+- EF Core 10.0+
 - Works with any relational database provider (SQL Server, PostgreSQL, SQLite, etc.)
 
 ## Thread Safety
