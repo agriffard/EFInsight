@@ -332,4 +332,37 @@ public class SlowQueryLoggerTests : IDisposable
         Assert.Equal(1, count);
         Assert.True(callbackInvoked);
     }
+
+    [Fact]
+    public async Task Logger_WithMaskParameters_MasksParameterValues()
+    {
+        // Arrange
+        var mockLogger = new Mock<ILogger<SlowQueryLogger>>();
+        mockLogger.Setup(x => x.IsEnabled(It.IsAny<LogLevel>())).Returns(true);
+
+        var logger = new SlowQueryLogger(
+            thresholdMs: 0,
+            logger: mockLogger.Object,
+            maskParameters: true);
+
+        var options = CreateSqliteOptions(logger);
+
+        using var context = new TestDbContext(options);
+        context.TestEntities.Add(new TestEntity { Name = "SensitiveData" });
+        await context.SaveChangesAsync();
+
+        // Act
+        var result = await context.TestEntities.Where(e => e.Name == "SensitiveData").ToListAsync();
+
+        // Assert
+        Assert.NotEmpty(result);
+        mockLogger.Verify(
+            x => x.Log(
+                LogLevel.Warning,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((o, t) => o.ToString()!.Contains("***") && !o.ToString()!.Contains("SensitiveData")),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.AtLeastOnce);
+    }
 }

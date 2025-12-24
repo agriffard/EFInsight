@@ -10,6 +10,7 @@ A lightweight library for detecting, logging, and analyzing slow or problematic 
 - 🎯 **DbContext filtering** - Filter queries by specific DbContext types
 - 🔧 **Custom callbacks** - Execute custom logic when slow queries are detected
 - 📍 **Stack trace capture** - Optional stack trace for debugging
+- 🔒 **Parameter masking** - Option to mask parameter values for security
 
 ## Installation
 
@@ -41,6 +42,7 @@ services.AddDbContext<MyDbContext>(options =>
 | `logger` | `ILogger` | `null` | Logger instance for structured logging |
 | `captureStackTrace` | `bool` | `false` | Whether to capture stack trace for slow queries |
 | `contextTypeFilter` | `Type` | `null` | Filter queries by specific DbContext type |
+| `maskParameters` | `bool` | `false` | Whether to mask parameter values in logs for security |
 
 ## Custom Callback
 
@@ -67,6 +69,18 @@ var logger = new SlowQueryLogger(
 );
 ```
 
+## Parameter Masking
+
+For production environments with sensitive data, you can mask parameter values:
+
+```csharp
+var logger = new SlowQueryLogger(
+    thresholdMs: 100,
+    logger: loggerFactory.CreateLogger<SlowQueryLogger>(),
+    maskParameters: true  // Parameters will be logged as "***"
+);
+```
+
 ## Diagnostic Codes
 
 | Code | Description |
@@ -81,10 +95,16 @@ warn: EFInsight.SlowQueryLogger[0]
       EFQL001: Slow query detected. Duration: 150.5ms, SQL: SELECT * FROM Users WHERE Name = @p0, Parameters: [@p0=John]
 ```
 
+With parameter masking enabled:
+```
+warn: EFInsight.SlowQueryLogger[0]
+      EFQL001: Slow query detected. Duration: 150.5ms, SQL: SELECT * FROM Users WHERE Name = @p0, Parameters: [@p0=***]
+```
+
 ## Compatibility
 
 - .NET 9.0+
-- EF Core 9.0+
+- EF Core 8.0+
 - Works with any relational database provider (SQL Server, PostgreSQL, SQLite, etc.)
 
 ## Thread Safety
